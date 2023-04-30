@@ -5,8 +5,8 @@ from utils import draw_line, writes_area_text, which_area
 
 """
 TODO 
-1 split frame into sectors
-2 find to which sector does the given object belong
+1 split frame into sectors DONE
+2 find to which sector does the given object belong DONE
 """
 
 model = YOLO('yolov8m.pt')
@@ -44,6 +44,9 @@ while cap.isOpened():
         x1,y1,x2,y2 = box.xyxy[0].detach().cpu()
         x, y = x2-(x2-x1)/2, y2-(y2-y1)/2
         cv2.circle(annotated_frame,(int(x),int(y)),3,(255,0,0),3)
+        area = which_area(annotated_frame,x,y)
+        cv2.putText(annotated_frame, area, (int(x),int(y-10)),cv2.FONT_HERSHEY_SIMPLEX,
+                    1,(0,255,0),2,cv2.LINE_AA)
 
     draw_everything()
 
