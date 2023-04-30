@@ -30,7 +30,6 @@ def writes_area_text(image, text, xf1, yf1):
 
 
 def which_area(image, midx, midy):
-    
     w = image.shape[1]
     h = image.shape[0]
     xf = midx/w
@@ -60,7 +59,7 @@ def which_area(image, midx, midy):
         if yf <= y2: # Top-middle line
             area = "A2"
         elif yf <= y4: # Bottom line
-            area = "Area 3"
+            area = "A3"
         else:
             area = "Entrance"
     elif xf > x3 and xf <= x4:

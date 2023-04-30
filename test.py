@@ -1,14 +1,10 @@
 import cv2
+import csv
 import time
 import numpy as np
 from ultralytics import YOLO
 from utils import draw_line, writes_area_text, which_area
 
-"""
-TODO 
-1 split frame into sectors DONE
-2 find to which sector does the given object belong DONE
-"""
 
 model = YOLO('yolov8m.pt')
 
@@ -33,7 +29,11 @@ def draw_everything():
 
 prev_frame_time = 0
 next_frame_time = 0
+areas_names = ['Register','Entrance','A1','A2','A3']
 
+f = open('values.csv','w',newline='')
+writer = csv.DictWriter(f,fieldnames=areas_names)
+writer.writeheader()
 
 while cap.isOpened():
     success, frame = cap.read()
@@ -44,16 +44,23 @@ while cap.isOpened():
     results = model.predict(frame, save=False, imgsz=640, conf=0.35, classes=0)
     annotated_frame = results[0].plot()
     boxes = results[0].boxes
-    
+    areas = {'Register':0,'Entrance':0,'A1':0,'A2':0,'A3':0}
+
     for box in boxes:
         x1,y1,x2,y2 = box.xyxy[0].detach().cpu()
         x, y = x2-(x2-x1)/2, y2-(y2-y1)/2
         cv2.circle(annotated_frame,(int(x),int(y)),3,(255,0,0),3)
         area = which_area(annotated_frame,x,y)
+        try:
+            areas[area] += 1
+        except KeyError:
+            print("No such area")
         cv2.putText(annotated_frame, area, (int(x),int(y-10)),cv2.FONT_HERSHEY_SIMPLEX,
                     1,(0,255,0),2,cv2.LINE_AA)
 
     draw_everything()
+    # print(areas)
+    writer.writerow(areas)
 
     next_frame_time = time.time()
     try:
@@ -68,6 +75,6 @@ while cap.isOpened():
     if cv2.waitKey(1) & 0xFF == ord("q"):
         break
 
-
+f.close()
 cap.release()
 cv2.destroyAllWindows()
