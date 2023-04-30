@@ -1,4 +1,5 @@
 import cv2
+import time
 import numpy as np
 from ultralytics import YOLO
 from utils import draw_line, writes_area_text, which_area
@@ -30,6 +31,10 @@ def draw_everything():
     writes_area_text(annotated_frame, "Area 1 (A1)", 0.60, 0.20)
 
 
+prev_frame_time = 0
+next_frame_time = 0
+
+
 while cap.isOpened():
     success, frame = cap.read()
 
@@ -50,6 +55,14 @@ while cap.isOpened():
 
     draw_everything()
 
+    next_frame_time = time.time()
+    try:
+        fps = str(round(1/(next_frame_time-prev_frame_time),2))
+    except ZeroDivisionError:
+        fps = ""
+    prev_frame_time = next_frame_time
+
+    cv2.putText(annotated_frame,"FPS: "+fps,(7,30),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),3,cv2.LINE_AA)
     cv2.imshow("YOLOv8 Inference", annotated_frame)
 
     if cv2.waitKey(1) & 0xFF == ord("q"):
