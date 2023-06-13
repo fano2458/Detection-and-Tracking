@@ -1,16 +1,23 @@
 import cv2
+import os
 import csv
 import time
 import numpy as np
 from ultralytics import YOLO
-from utils import draw_line, writes_area_text, which_area
+from utils.util import draw_line, writes_area_text, which_area
+import warnings
+import torch
+from nets import nn
+from utils import util
+
+warnings.filterwarnings("ignore")
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
 
-model = YOLO('yolov8x.pt')
+model = YOLO('yolov8m.pt')
+deepsort = nn.DeepSort()
 
-#video_path = r"C:\Users\fano\Downloads\Top down view of people walking.mp4"
-#video_path = "data/test.mp4"
-video_path = r"C:\Users\fano\Downloads\People tracking with kalman filter and yolo.mp4"
+video_path = "data/test.mp4"
 cap = cv2.VideoCapture(video_path)
 
 
@@ -42,14 +49,20 @@ while cap.isOpened():
 
     if not success:
         break
-
-    #results = model.predict(frame, save=False, imgsz=640, conf=0.35, classes=0)
-    results = model.track(frame,conf=0.35,classes=0,tracker=r"C:\Users\fano\Downloads\bytetrack.yaml")
-
+    #TODO change
+    results = model.predict(frame, show_labels=False, show_conf=False, 
+        save=False, imgsz=640, conf=0.35, classes=0,augment=False)
+    
     annotated_frame = results[0].plot()
     boxes = results[0].boxes
     areas = {'Register':0,'Entrance':0,'A1':0,'A2':0,'A3':0}
+    boxes_d = boxes.xywh
+    confs_d = boxes.conf
+    boxes_d = np.array(boxes_d.cpu())
+    confs_d = np.array(confs_d.cpu())
+    indic_d = np.zeros_like(confs_d)
 
+    #TODO optimize
     for box in boxes:
         x1,y1,x2,y2 = box.xyxy[0].detach().cpu()
         x, y = x2-(x2-x1)/2, y2-(y2-y1)/2
@@ -60,8 +73,26 @@ while cap.isOpened():
         except KeyError:
             print("No such area")
         cv2.putText(annotated_frame, area, (int(x),int(y-10)),cv2.FONT_HERSHEY_SIMPLEX,
-                    1,(0,255,0),2,cv2.LINE_AA)
+                    1,(0,255,0),1,cv2.LINE_AA)
 
+    outputs = deepsort.update(boxes_d,confs_d,indic_d,frame)
+    
+    if len(outputs) > 0:
+        boxes = outputs[:, :4]
+        object_id = outputs[:, -1]
+        indentities = outputs[:, -2]
+        for i, box in enumerate(boxes):
+            if object_id[i] != 0:
+                continue
+            x1,y1,x2,y2 = list(map(int, box))
+            index = int(indentities[i]) if indentities is not None else 0
+
+            #draw_lines(annotated_frame, x1,y1,x2,y2,index)
+            text = f'ID:{str(index)}'
+            cv2.putText(annotated_frame, text,
+                (x1, y1 - 2),
+                0, 1, (0, 255, 255),
+                thickness=1, lineType=cv2.FILLED)
     #draw_everything()
     writer.writerow(areas)
 
