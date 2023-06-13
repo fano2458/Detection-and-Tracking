@@ -85,15 +85,12 @@ while cap.isOpened():
             if object_id[i] != 0:
                 continue
             x1,y1,x2,y2 = list(map(int, box))
+            x, y = x2-(x2-x1)/2, y2-(y2-y1)/2
             index = int(indentities[i]) if indentities is not None else 0
 
-            #draw_lines(annotated_frame, x1,y1,x2,y2,index)
             text = f'ID:{str(index)}'
-            cv2.putText(annotated_frame, text,
-                (x1, y1 - 2),
-                0, 1, (0, 255, 255),
-                thickness=1, lineType=cv2.FILLED)
-    #draw_everything()
+            cv2.putText(annotated_frame,text,(int(x),int(y+10)),0,1,(0,255,255),2,lineType=cv2.FILLED)
+    draw_everything()
     writer.writerow(areas)
 
     next_frame_time = time.time()
