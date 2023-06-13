@@ -111,6 +111,7 @@ while cap.isOpened():
     prev_frame_time = next_frame_time
 
     cv2.putText(annotated_frame,"FPS: "+fps,(7,30),cv2.FONT_HERSHEY_SIMPLEX,1,(0,255,0),3,cv2.LINE_AA)
+    
     cv2.imshow("Tracking", annotated_frame)
 
     if cv2.waitKey(1) & 0xFF == ord("q"):
