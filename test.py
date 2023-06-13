@@ -6,9 +6,11 @@ from ultralytics import YOLO
 from utils import draw_line, writes_area_text, which_area
 
 
-model = YOLO('yolov8m.pt')
+model = YOLO('yolov8x.pt')
 
-video_path = "data/test.mp4"
+#video_path = r"C:\Users\fano\Downloads\Top down view of people walking.mp4"
+#video_path = "data/test.mp4"
+video_path = r"C:\Users\fano\Downloads\People tracking with kalman filter and yolo.mp4"
 cap = cv2.VideoCapture(video_path)
 
 
@@ -41,7 +43,9 @@ while cap.isOpened():
     if not success:
         break
 
-    results = model.predict(frame, save=False, imgsz=640, conf=0.35, classes=0)
+    #results = model.predict(frame, save=False, imgsz=640, conf=0.35, classes=0)
+    results = model.track(frame,conf=0.35,classes=0,tracker=r"C:\Users\fano\Downloads\bytetrack.yaml")
+
     annotated_frame = results[0].plot()
     boxes = results[0].boxes
     areas = {'Register':0,'Entrance':0,'A1':0,'A2':0,'A3':0}
@@ -58,8 +62,7 @@ while cap.isOpened():
         cv2.putText(annotated_frame, area, (int(x),int(y-10)),cv2.FONT_HERSHEY_SIMPLEX,
                     1,(0,255,0),2,cv2.LINE_AA)
 
-    draw_everything()
-    # print(areas)
+    #draw_everything()
     writer.writerow(areas)
 
     next_frame_time = time.time()
