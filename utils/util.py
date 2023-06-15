@@ -1238,3 +1238,16 @@ def which_area(image, midx, midy):
     return area
 
 
+def draw_everything(annotated_frame):
+    draw_line(annotated_frame, 0.00, 0.20, 0.10, 0.20) # Top-left line
+    draw_line(annotated_frame, 0.10, 0.25, 0.55, 0.05) # Top-middle line
+    draw_line(annotated_frame, 0.10, 0.25, 0.30, 0.80) # Left line
+    draw_line(annotated_frame, 0.35, 0.15, 0.65, 0.45) # Middle Line
+    draw_line(annotated_frame, 0.30, 0.80, 0.85, 0.25) # Bottom line
+    draw_line(annotated_frame, 0.55, 0.05, 0.85, 0.25) # Right line
+
+    writes_area_text(annotated_frame, "Register", 0.01, 0.25)
+    writes_area_text(annotated_frame, "Area 2 (A2)", 0.20, 0.05)
+    writes_area_text(annotated_frame, "Area 3 (A3)", 0.30, 0.40)
+    writes_area_text(annotated_frame, "Entrance", 0.70, 0.80)
+    writes_area_text(annotated_frame, "Area 1 (A1)", 0.60, 0.20)
